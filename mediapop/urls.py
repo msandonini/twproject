@@ -18,8 +18,4 @@ from django.contrib import admin
 from django.urls import path, include, re_path
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path("forum/", include("forum.urls")),
-    path("reviews/", include("reviews.urls")),
-    re_path(r"^$|^/", include("mediapop.urls"))
 ]
