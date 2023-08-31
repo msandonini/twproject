@@ -19,7 +19,7 @@ from django.urls import path, include, re_path
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path("forum/", include("forum.urls")),
-    path("reviews/", include("reviews.urls")),
-    re_path(r"^$|^/", include("mediapop.urls"))
+    path("forum/", include("forum.urls"), name="forum"),
+    path("reviews/", include("reviews.urls"), name="reviews"),
+    path("", include("mediapop.urls"))
 ]

@@ -17,5 +17,10 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include, re_path
 
+from mediapop import views
+
+app_name = "index"
 urlpatterns = [
+    path("media", views.MediaView.as_view(), name="media"),
+    re_path("^$|^/$|^index/$", views.IndexView.as_view(), name="index")
 ]
