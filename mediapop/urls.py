@@ -21,6 +21,8 @@ from mediapop import views
 
 app_name = "index"
 urlpatterns = [
+    path("login", views.LoginView.as_view(), name="login"),
+    path("signup", views.SignupView.as_view(), name="signup"),
     path("media", views.MediaView.as_view(), name="media"),
     re_path("^$|^/$|^index/$", views.IndexView.as_view(), name="index")
 ]
