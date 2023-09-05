@@ -1,6 +1,7 @@
 from django import views
 from django.contrib import auth
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.contrib.auth.models import Group
 from django.contrib.auth.views import LogoutView
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
@@ -47,6 +48,9 @@ class UserSignupView(FormView):
 
     def form_valid(self, form):
         user = form.save()
+        group = Group.objects.get(name='User')
+        user.groups.add(group)
+
         auth.login(self.request, user)
         # Redirect to a success page or do something else
         return HttpResponse("")
