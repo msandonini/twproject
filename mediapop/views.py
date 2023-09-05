@@ -1,6 +1,8 @@
 from django import views
+from django.contrib import auth
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
-from django.http import HttpResponse
+from django.contrib.auth.views import LogoutView
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.views.generic import TemplateView, FormView
 
@@ -28,10 +30,23 @@ class MediaView(TemplateView):
         return render(request=request, template_name=self.template_name, context=context)
 
 
-class LoginView(FormView):
+class UserLoginView(FormView):
     template_name = "mediapop/login-form.html"
     form_class = AuthenticationForm
 
+    def form_valid(self, form):
+        user = form.get_user()
+        auth.login(self.request, user)
+        # You can customize the success message as needed
+        return HttpResponse("")
 
-class SignupView(FormView):
+
+class UserSignupView(FormView):
+    template_name = "mediapop/signup-form.html"
     form_class = UserCreationForm
+
+    def form_valid(self, form):
+        user = form.save()
+        auth.login(self.request, user)
+        # Redirect to a success page or do something else
+        return HttpResponse("")

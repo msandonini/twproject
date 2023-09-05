@@ -15,14 +15,16 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
+from django.contrib.auth.views import LogoutView
 from django.urls import path, include, re_path
 
 from mediapop import views
 
 app_name = "index"
 urlpatterns = [
-    path("login", views.LoginView.as_view(), name="login"),
-    path("signup", views.SignupView.as_view(), name="signup"),
+    path("login", views.UserLoginView.as_view(), name="login"),
+    path("logout", LogoutView.as_view(), name="logout"),
+    path("signup", views.UserSignupView.as_view(), name="signup"),
     path("media", views.MediaView.as_view(), name="media"),
     re_path("^$|^/$|^index/$", views.IndexView.as_view(), name="index")
 ]

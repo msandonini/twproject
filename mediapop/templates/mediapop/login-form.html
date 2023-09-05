@@ -1,41 +1,7 @@
-<form id="_form-login_">
+<form id="_form_">
     {% csrf_token %}
     {{ form.as_p }}
     <button type="submit">Login</button>
 </form>
 
-<!-- Display the result of the login attempt -->
-<div id="_div-login-result_"></div>
-
-<!-- JavaScript for handling the form submission asynchronously -->
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        const loginForm = document.getElementById("_form-login_");
-        const loginResult = document.getElementById("_div-login-result_");
-
-        loginForm.addEventListener("submit", async (e) => {
-            e.preventDefault();
-
-            const formData = new FormData(loginForm);
-            try {
-                const response = await fetch("{% url 'index:login' %}", {
-                    method: "POST",
-                    body: formData,
-                });
-
-                if (response.ok) {
-                    // Successful login
-                    loginResult.textContent = "Login successful!";
-                    // Redirect or perform other actions
-                } else {
-                    // Failed login
-                    const data = await response.json();
-                    loginResult.textContent = data.message;
-                }
-            } catch (error) {
-                console.error("Error:", error);
-                loginResult.textContent = "An error occurred.";
-            }
-        });
-    });
-</script>
+<div id="_div-form-result_"></div>
