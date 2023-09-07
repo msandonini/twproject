@@ -4,4 +4,19 @@
 
 {% block main %}
 <!--TODO: create page-->
+    <div class="list-group">
+        <a href="/media" class="list-group-item list-group-item-info">Opere</a>
+        <a href="/reviews" class="list-group-item list-group-item-info">Recensioni</a>
+        <a href="/forum" class="list-group-item list-group-item-info">Forum</a>
+    </div>
+
+    <br>
+
+
+    {% if user.is_staff %}
+        <div class="list-group">
+            <a href="/admin" class="list-group-item list-group-item-danger">Gestisci database</a>
+        </div>
+    {% endif %}
+
 {% endblock %}

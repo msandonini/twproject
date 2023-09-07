@@ -3,6 +3,7 @@ from django.contrib import auth
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.models import Group
 from django.contrib.auth.views import LogoutView
+from django.db.models import Avg
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.views.generic import TemplateView, FormView
@@ -21,7 +22,7 @@ class MediaView(TemplateView):
     template_name = "mediapop/media.html"
 
     def get(self, request, *args, **kwargs):
-        media = Media.objects.values()
+        media = Media.objects.annotate(users_vote=Avg('mediavote__vote'))
 
         context = {}
 
