@@ -1,5 +1,6 @@
 from functools import wraps
 
+import bleach
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render, redirect
@@ -59,6 +60,15 @@ class ReviewDetailView(TemplateView):
 
         review_pk = self.kwargs['pk']
         review = Review.objects.get(pk=review_pk)
+
+        review_txt_vulnerable = review.text.replace("\n", "<br>")
+
+        bleach_settings = {
+            "tags": ["br"],
+            "attributes": {}
+        }
+
+        context["review_text"] = bleach.clean(review_txt_vulnerable, **bleach_settings)
 
         context["review"] = review
 

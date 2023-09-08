@@ -8,14 +8,23 @@
             <img class="img-fluid" src="/media/{{ review.cover }}" alt="">
         {% endif %}
         <h1 class="mt-3">{{ review.title }}</h1>
-        <h5 class="mt-3">{{ review.media.name }}</h5>
-        <p class="fs-5">Voto: {{ review.vote }}</p>
+        <h6 class="mt-3">
+            Autore: {{ review.user.username }}
+            {% if review.user.first_name and review.user.last_name %}
+                ({{ review.user.first_name }} {{ review.user.last_name }})
+            {% else %}
+                (Recensore Anonimo)
+            {% endif %}
+        </h6>
+        <p class="fs-4">{{ review.media.name }} ({{ review.media.get_media_type_display }})</p>
+        <p class="fs-5">Voto: {{ review.vote }}/10</p>
         <div class="mt-3">
             <p style="text-align: justify">
-                {{ review.text }}
+                {{ review_text|safe }}
             </p>
         </div>
 
+        <!-- TODO: Add modify button -->
         <!-- TODO: Add user comments -->
     </div>
 {% endblock %}
