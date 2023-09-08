@@ -41,12 +41,6 @@
         </div>
     </header>
 
-    <div class="container" style="margin-top:30px">
-
-      <div class="col-sm-22">
-        <center>
-
-
     <main class="container">
         <div class="col-sm-22">
             {% block main %}{% endblock %}
@@ -128,7 +122,7 @@
             form.querySelectorAll("button").forEach(btn => {
                 btn.classList.add("btn");
                 btn.classList.add("btn-primary");
-            })
+            });
 
             form.addEventListener("submit", async (e) => {
                 e.preventDefault();

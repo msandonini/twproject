@@ -4,11 +4,38 @@
 
 {% block main %}
     {% if reviews %}
-        <ul>
-        {% for data in reviews %}
-            <li>data</li>
-        {% endfor %}
-        </ul>
+        <!-- TODO: Item filtering -->
+
+        <div class="album py-5 bg-body-tertiary">
+            <div class="container">
+                <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
+                    {% for data in reviews %}
+                        <a href="{% url 'reviews:review_detail' data.id %}" style="text-decoration: inherit; color: inherit">
+                            <div class="col">
+                                <div class="card shadow-sm">
+                                    {% if data.cover %}
+                                        <img src="/media/{{ data.cover }}" alt="{{ data.name }} cover">
+                                    {% endif %}
+                                    <div class="card-body">
+                                        <h5 class="card-title">{{ data.title }}</h5>
+                                        <h6 class="card-subtitle mb-2 text-muted">{{ data.media.name }}</h6>
+                                        <p class="card-text fs-5">{{ data.vote }}</p>
+                                    </div>
+                                <div class="card-footer">
+                                    <small class="text-muted">
+                                        {{ data.user.username }}
+                                        {% if data.user.name and data.user.surname %}
+                                        	{{ data.user.name }} {{ data.user.surname }}
+                                        {% endif %}
+                                    </small>
+                                </div>
+                                </div>
+                            </div>
+                        </a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
     {% else %}
         <h1>Nessuna recensione presente</h1>
     {% endif %}

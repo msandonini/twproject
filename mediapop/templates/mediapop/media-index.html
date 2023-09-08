@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block subtitle %}Opere{% endblock %}
+
+{% block main %}
+    {% if media %}
+        <!-- TODO: Item filtering -->
+
+        <div class="album py-5 bg-body-tertiary">
+            <div class="container">
+                <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
+                    {% for data in media %}
+                        <a href="{% url 'index:media_detail' data.id %}" style="text-decoration: inherit; color: inherit">
+                            <div class="col">
+                                <div class="card shadow-sm">
+                                    {% if data.cover %}
+                                        <img src="/media/{{ data.cover }}" alt="{{ data.name }} cover">
+                                    {% endif %}
+                                    <div class="card-body">
+                                        <h5 class="card-title">{{ data.name }}</h5>
+                                        <h6 class="card-subtitle mb-2 text-muted">{{ data.get_media_type_display }}</h6>
+                                        <div class="d-flex justify-content-between flex-column align-items-center">
+
+                                            <!--TODO: Aggiungi voto recensori-->
+                                            <small class="text-body-secondary">
+                                                Voto recensori: {% if data.reviewers_vote %}{{ data.reviewers_vote }}{% else %}-{% endif %}/5
+                                            </small>
+                                            <small class="text-body-secondary">
+                                                Voto utenti: {% if data.users_vote %}{{ data.users_vote }}{% else %}-{% endif %}/5
+                                            </small>
+                                            <br>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <h1>Nessuna opera presente</h1>
+    {% endif %}
+
+{% endblock %}

@@ -1,64 +1,107 @@
 {% extends 'base.html' %}
 
-{% block subtitle %}Opere{% endblock %}
+{% load auth_extras %}
+
+{% block subtitle %}Opera: {{ media.name }}{% endblock %}
 
 {% block main %}
-    {% if media %}
-        <!--TODO: Item filtering-->
+    <div class="container mt-5">
+        {% if media.cover %}
+            <img class="img-fluid" src="/media/{{ media.cover }}" alt="">
+        {% endif %}
+        <h1 class="mt-3">{{ media.name }}</h1>
+        <h5 class="mt-3">{{ media.get_media_type_display }}</h5>
+        <div class="mt-3">
+            <p>Voto utenti: {% if data.users_vote %}{{ data.users_vote }}{% else %}-{% endif %}/5</p>
+        </div>
+    </div>
 
-        <div class="album py-5 bg-body-tertiary">
-            <div class="container">
-                <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
-                    {% for data in media %}
-                    	<div class="col">
-                            <div class="card shadow-sm">
-                                {% if data.cover %}
-                                    <img src="/media/{{ data.cover }}" alt="{{ data.name }} cover">
-                                {% endif %}
-                                <div class="card-body">
-                                    <h5 class="card-title">{{ data.name }}</h5>
-                                    <h6 class="card-subtitle mb-2 text-muted">{{ data.get_media_type_display }}</h6>
-                                    <div class="d-flex justify-content-between flex-column align-items-center">
+    {% if user|has_group:"Reviewer" %}
+        <button id="_btn-review_" type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createReviewModal">
+            Recensisci
+        </button>
 
-                                        <!--TODO: Aggiungi voto recensori-->
-                                        <small class="text-body-secondary">
-                                            Voto recensori: {% if data.reviewers_vote %}{{ data.reviewers_vote }}{% else %}-{% endif %}/5
-                                        </small>
-                                        <small class="text-body-secondary">
-                                            Voto utenti: {% if data.users_vote %}{{ data.users_vote }}{% else %}-{% endif %}/5
-                                        </small>
-                                        <br>
-                                        <br>
-                                        <h7>Valuta</h7>
-                                        <form>
-                                            <div class="form-check form-check-inline m-1">
-                                                <input class="form-check-input" type="radio" name="user-rating" id="_r1_" value="1">
-                                            </div>
-                                            <div class="form-check form-check-inline m-1">
-                                                <input class="form-check-input" type="radio" name="user-rating" id="_r2_" value="2">
-                                            </div>
-                                            <div class="form-check form-check-inline m-1">
-                                                <input class="form-check-input" type="radio" name="user-rating" id="_r3_" value="3">
-                                            </div>
-                                            <div class="form-check form-check-inline m-1">
-                                                <input class="form-check-input" type="radio" name="user-rating" id="_r4_" value="4">
-                                            </div>
-                                            <div class="form-check form-check-inline m-1">
-                                                <input class="form-check-input" type="radio" name="user-rating" id="_r5_" value="5">
-                                            </div>
-                                            <!--TODO: Aggiungi script per valutazione-->
-                                            <!--TODO: Modifica id input per differenziare tra opere diverse-->
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    {% endfor %}
+        <div class="modal fade" id="createReviewModal" tabindex="-1" role="dialog" aria-labelledby="createReviewModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="createReviewModalLabel">Recensisci {{ media.name }}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body" id="_modal-review-form_">
+                    </div>
                 </div>
             </div>
         </div>
-    {% else %}
-        <h1>Nessuna opera presente</h1>
-    {% endif %}
 
+        <script>
+            const btn_review = document.getElementById("_btn-review_");
+            const review_form = document.getElementById("_modal-review-form_")
+
+            if (btn_review)
+                btn_review.addEventListener('click', () => {
+                    _showReviewForm();
+                });
+
+            function _showReviewForm() {
+                fetch("{% url 'reviews:create_review' media.id %}")
+                .then(response => response.text())
+                .then(data => {
+                    review_form.innerHTML = data;
+
+                    const form = document.getElementById("_form-review_");
+
+                    form.querySelectorAll("input").forEach(input => {
+                        input.classList.add("form-control");
+                    });
+                    form.querySelectorAll("textarea").forEach(input => {
+                        input.classList.add("form-control");
+                    });
+                    form.querySelectorAll("button").forEach(btn => {
+                        btn.classList.add("btn");
+                        btn.classList.add("btn-primary");
+                    });
+
+                    form.addEventListener("submit", async (e) => {
+                        const result = document.getElementById("_div-form-result_");
+
+                        e.preventDefault();
+
+                        const formData = new FormData(form);
+                        try {
+                            const response = await fetch("{% url 'reviews:create_review' media.id %}", {
+                                method: "POST",
+                                body: formData,
+                            });
+
+                            if (response.ok) {
+                                // Successful
+                                const data = await response.text()
+
+                                if (data === "") {
+                                    result.textContent = "Login successful!";
+                                    location.reload();
+                                } else {
+                                    form_container.innerHTML = data;
+                                    _initForm();
+                                }
+
+                            } else {
+                                // Failed login
+                                const data = await response.json();
+                                result.textContent = data.message;
+                            }
+                        } catch (error) {
+                            console.error("Error:", error);
+                            result.textContent = "An error occurred.";
+                        }
+                    });
+                });
+            }
+        </script>
+    {% elif user.is_authenticated %}
+        <div class="mt-3">
+            <!-- TODO: Implement user voting -->
+        </div>
+    {% endif %}
 {% endblock %}

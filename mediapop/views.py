@@ -6,7 +6,7 @@ from django.contrib.auth.views import LogoutView
 from django.db.models import Avg
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
-from django.views.generic import TemplateView, FormView
+from django.views.generic import TemplateView, FormView, DetailView
 
 from mediapop.models import Media
 
@@ -19,7 +19,7 @@ class IndexView(TemplateView):
 
 
 class MediaView(TemplateView):
-    template_name = "mediapop/media.html"
+    template_name = "mediapop/media-index.html"
 
     def get(self, request, *args, **kwargs):
         media = Media.objects.annotate(users_vote=Avg('mediavote__vote'))
@@ -30,6 +30,14 @@ class MediaView(TemplateView):
             context["media"] = media
 
         return render(request=request, template_name=self.template_name, context=context)
+
+
+class MediaDetailView(DetailView):
+    model = Media
+    template_name = 'mediapop/media.html'
+    context_object_name = 'media'
+
+    # TODO: Write POST to accept user votes
 
 
 class UserLoginView(FormView):

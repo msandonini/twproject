@@ -8,10 +8,10 @@ from django.db import models
 class Review(models.Model):
     title = models.CharField(max_length=255)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    opera = models.ForeignKey('mediapop.Media', on_delete=models.CASCADE)
+    media = models.ForeignKey('mediapop.Media', on_delete=models.CASCADE)
     cover = models.ImageField(upload_to='reviews/')
     vote = models.DecimalField(max_digits=3, decimal_places=1,
-                               validators=[MinValueValidator(0.0), MaxValueValidator(5.0)])
+                               validators=[MinValueValidator(0.0), MaxValueValidator(10.0)])
     text = models.TextField()
 
     def __str__(self):

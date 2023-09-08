@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block subtitle %}Recensione: {{ review.name }}{% endblock %}
+
+{% block main %}
+    <div class="container mt-5">
+        {% if review.cover %}
+            <img class="img-fluid" src="/media/{{ review.cover }}" alt="">
+        {% endif %}
+        <h1 class="mt-3">{{ review.title }}</h1>
+        <h5 class="mt-3">{{ review.media.name }}</h5>
+        <p class="fs-5">Voto: {{ review.vote }}</p>
+        <div class="mt-3">
+            <p style="text-align: justify">
+                {{ review.text }}
+            </p>
+        </div>
+
+        <!-- TODO: Add user comments -->
+    </div>
+{% endblock %}

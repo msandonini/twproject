@@ -26,5 +26,6 @@ urlpatterns = [
     path("logout", LogoutView.as_view(), name="logout"),
     path("signup", views.UserSignupView.as_view(), name="signup"),
     path("media", views.MediaView.as_view(), name="media"),
+    path("media/<int:pk>", views.MediaDetailView.as_view(), name="media_detail"),
     re_path("^$|^/$|^index/$", views.IndexView.as_view(), name="index")
 ]
