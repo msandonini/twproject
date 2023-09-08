@@ -1,10 +1,9 @@
-from django import views
 from django.contrib import auth
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.models import Group
-from django.contrib.auth.views import LogoutView
+from django.core.paginator import Paginator
 from django.db.models import Avg
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse
 from django.shortcuts import render
 from django.views.generic import TemplateView, FormView, DetailView
 
@@ -22,12 +21,32 @@ class MediaView(TemplateView):
     template_name = "mediapop/media-index.html"
 
     def get(self, request, *args, **kwargs):
+        items_per_page = 15
+
+        q_name = request.GET.get('name')
+        q_media_type = request.GET.get('type')
+        q_order_by = request.GET.get('order_by')
+
         media = Media.objects.annotate(users_vote=Avg('mediavote__vote'))
+        media = media.annotate(reviewers_vote=Avg('review__vote'))
 
-        context = {}
+        if q_name:
+            media = media.filter(name__contains=q_name)
 
-        if len(media) > 0:
-            context["media"] = media
+        if q_media_type:
+            media = media.filter(media_type=q_media_type)
+
+        if not q_order_by:
+            q_order_by = "name"
+        media = media.order_by(q_order_by)
+
+        paginator = Paginator(media, items_per_page)
+        page_number = request.GET.get('page')
+        page = paginator.get_page(page_number)
+
+        context = {
+            "media": page
+        }
 
         return render(request=request, template_name=self.template_name, context=context)
 
