@@ -11,8 +11,8 @@
                 <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
                     {% for data in reviews %}
                         <a href="{% url 'reviews:review_detail' data.id %}" style="text-decoration: inherit; color: inherit">
-                            <div class="col">
-                                <div class="card shadow-sm">
+                            <div class="col" style="height: 100%;">
+                                <div class="card shadow-sm" style="height: 100%;">
                                     {% if data.cover %}
                                         <img src="/media/{{ data.cover }}" alt="{{ data.name }} cover">
                                     {% endif %}
