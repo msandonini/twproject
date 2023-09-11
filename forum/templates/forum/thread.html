@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+
+{% block subtitle %}Thread: {{ thread.title }}{% endblock %}
+
+{% block main %}
+	<h1>{{ thread.title }}</h1>
+    <h3>{{ thread.media.name }}</h3>
+    <h6 class="text-muted">@{{ thread.author.username }}</h6>
+    <small class="text-muted">{{ thread.creation_time }}</small>
+    <!-- TODO: Add button to permit moderators to delete thread -->
+    {% if user.is_authenticated %}
+        <form id="_form-comment_" method="post">
+            {% csrf_token %}
+            {{ comment_form.as_p }}
+            <button type="submit">Pubblica commento</button>
+        </form>
+        <div id="_div-form-comment-result_"></div>
+        <script>
+            const form_comment = document.getElementById("_form-comment_");
+
+            if (form_comment) {
+                form_comment.querySelectorAll("input").forEach(input => {
+                    input.classList.add("form-control");
+                });
+                form_comment.querySelectorAll("textarea").forEach(input => {
+                    input.classList.add("form-control");
+                    input.rows = 3;
+                });
+                form_comment.querySelectorAll("button").forEach(btn => {
+                    btn.classList.add("btn");
+                    btn.classList.add("btn-primary");
+                });
+
+                form_comment.addEventListener("submit", async (e) => {
+                    const result = document.getElementById("_div-form-comment-result_");
+
+                    e.preventDefault();
+
+                    const formData = new FormData(form_comment);
+                    try  {
+                        const response = await fetch("{% url 'forum:thread' thread.id %}", {
+                            method: "POST",
+                            body: formData
+                        });
+
+                        if (response.ok) {
+                            // Successful
+                            window.location.reload();
+                        } else {
+                            // Failed
+                            result.textContent = "An error occurred.";
+                        }
+                    } catch (error) {
+                        console.log("Error: ", error);
+                        result.textContent = "An error occurred.";
+                    }
+                });
+            }
+        </script>
+    {% endif %}
+    <div class="list-group m-3">
+        {% for comment in comments %}
+            <div class="list-group-item ms-2 me-auto">
+                <div class="fw-bold">{{ comment.user.username }}</div>
+                <small>{{ comment.timestamp }}</small><br>
+                {{ comment.content }}
+            </div>
+            <!-- TODO: Add button to permit moderators to delete comment -->
+        {% endfor %}
+    </div>
+{% endblock %}

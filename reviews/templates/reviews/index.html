@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block subtitle %}Recensioni{% endblock %}
+
+{% block main %}
+    {% if reviews %}
+        <!-- TODO: Item filtering -->
+
+        <div class="album py-5 bg-body-tertiary">
+            <div class="container">
+                <div {% comment %}class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3"{% endcomment %}>
+                    {% for data in reviews %}
+                        <a href="{% url 'reviews:review_detail' data.id %}" style="text-decoration: inherit; color: inherit">
+                            <div class="card mb-3" style="max-width: 100%;">
+                                <div class="row g-0">
+                                    {% if data.cover %}
+                                        <div class="col-md-2">
+                                            <img src="/media/{{ data.cover }}" alt="" class="img-fluid rounded-start">
+                                        </div>
+                                    {% endif %}
+                                <div class="col-md-8">
+                                    <div class="card-body">
+                                        <h5 class="card-title">{{ data.title }}</h5>
+                                        <h6 class="card-subtitle text-muted">{{ data.media.name }}</h6>
+                                        <p class="card-text">{{ data.vote }}</p>
+                                    </div>
+                                </div>
+                                </div>
+                            </div>
+                        </a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <h1>Nessuna recensione presente</h1>
+    {% endif %}
+{% endblock %}

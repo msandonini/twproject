@@ -7,7 +7,8 @@ from django.http import HttpResponse
 from django.shortcuts import render
 from django.views.generic import TemplateView, FormView, DetailView
 
-from mediapop.models import Media
+from mediapop.models import Media, MediaVote
+from reviews.models import Review
 
 
 # Create your views here.
@@ -55,6 +56,16 @@ class MediaDetailView(DetailView):
     model = Media
     template_name = 'mediapop/media.html'
     context_object_name = 'media'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data()
+
+        context["users_vote"] = MediaVote.objects.filter(media=context.get("object")).aggregate(Avg('vote'))['vote__avg']
+        context["reviewers_vote"] = Review.objects.filter(media=context.get("object")).aggregate(Avg('vote'))['vote__avg']
+
+        print(context)
+
+        return context
 
     # TODO: Write POST to accept user votes
 

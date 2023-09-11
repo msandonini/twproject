@@ -12,7 +12,8 @@
         <h1 class="mt-3">{{ media.name }}</h1>
         <h5 class="mt-3">{{ media.get_media_type_display }}</h5>
         <div class="mt-3">
-            <p>Voto utenti: {% if data.users_vote %}{{ data.users_vote }}{% else %}-{% endif %}/5</p>
+            <p>Voto utenti: {% if users_vote %}{{ users_vote|floatformat:1 }}{% else %}-{% endif %}/10</p>
+            <p>Voto recensori: {% if reviewers_vote %}{{ reviewers_vote|floatformat:1 }}{% else %}-{% endif %}/10</p>
         </div>
     </div>
 
@@ -102,6 +103,79 @@
     {% elif user.is_authenticated %}
         <div class="mt-3">
             <!-- TODO: Implement user voting -->
+            <button id="_btn-open-thread_" type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createThreadModal">
+                Inizia una discussione
+            </button>
+
+            <div class="modal fade" id="createThreadModal" tabindex="-1" role="dialog" aria-labelledby="createThreadModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-lg" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="createThreadModalLabel">Apri una discussione su {{ media.name }}</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body" id="_modal-create-thread-form_">
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
+        <script>
+            const btn_thread = document.getElementById("_btn-open-thread_");
+            const thread_form = document.getElementById("_modal-create-thread-form_")
+
+            if (btn_thread)
+                btn_thread.addEventListener('click', () => {
+                    _showReviewForm();
+                });
+
+            function _showReviewForm() {
+                fetch("{% url 'forum:create' media.id %}")
+                .then(response => response.text())
+                .then(data => {
+                    thread_form.innerHTML = data;
+
+                    const form = document.getElementById("_form-thread_");
+
+                    form.querySelectorAll("input").forEach(input => {
+                        input.classList.add("form-control");
+                    });
+                    form.querySelectorAll("textarea").forEach(input => {
+                        input.classList.add("form-control");
+                    });
+                    form.querySelectorAll("button").forEach(btn => {
+                        btn.classList.add("btn");
+                        btn.classList.add("btn-primary");
+                    });
+
+                    form.addEventListener("submit", async (e) => {
+                        const result = document.getElementById("_div-form-result_");
+
+                        e.preventDefault();
+
+                        const formData = new FormData(form);
+                        try {
+                            const response = await fetch("{% url 'forum:create' media.id %}", {
+                                method: "POST",
+                                body: formData,
+                            });
+
+                            if (response.redirected) {
+                                // Successful
+                                window.location.assign(response.url)
+
+                            } else {
+                                // Failed
+                                const data = await response.json();
+                                result.textContent = data.message;
+                            }
+                        } catch (error) {
+                            console.error("Error:", error);
+                            result.textContent = "An error occurred.";
+                        }
+                    });
+                });
+            }
+        </script>
     {% endif %}
 {% endblock %}

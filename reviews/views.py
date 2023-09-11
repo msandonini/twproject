@@ -17,23 +17,20 @@ from reviews.models import Review
 # Create your views here.
 
 class IndexView(TemplateView):
-    template_name = "index.html"
+    template_name = "reviews/index.html"
 
-    def get(self, request, *args, **kwargs):
-        reviews = Review.objects.all()
+    def get_context_data(self, **kwargs):
+        context = {
+            "reviews": Review.objects.all()
+        }
 
-        context = {}
-
-        if len(reviews) > 0:
-            context["reviews"] = reviews
-
-        return render(request=request, template_name=self.template_name, context=context)
+        return context
 
 
 @method_decorator(reviewer_required, name='dispatch')
 class CreateReviewView(FormView):
     form_class = ReviewForm
-    template_name = 'review-form.html'
+    template_name = 'reviews/review-form.html'
 
     def get_success_url(self):
         # TODO: Create redirect page for created review
@@ -53,7 +50,7 @@ class CreateReviewView(FormView):
 
 
 class ReviewDetailView(TemplateView):
-    template_name = "review-detail.html"
+    template_name = "reviews/review-detail.html"
 
     def get_context_data(self, **kwargs):
         context = {}

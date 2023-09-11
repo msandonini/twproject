@@ -15,8 +15,13 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include, re_path
+
+from forum import views
 
 app_name = "forum"
 urlpatterns = [
+    path("create/<int:pk>", views.CreateThreadView.as_view(), name="create"),
+    path("thread/<int:pk>", views.ThreadDetailView.as_view(), name="thread"),
+    re_path("^$|^/$|^index/$", views.IndexView.as_view(), name="index")
 ]
