@@ -8,7 +8,7 @@ from django.http import JsonResponse, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.urls import reverse_lazy, reverse
 from django.utils.decorators import method_decorator
-from django.views.generic import TemplateView, FormView, CreateView
+from django.views.generic import TemplateView, FormView, CreateView, UpdateView
 
 from mediapop.models import Media
 from mediapop.views import get_recommendation_scores
@@ -30,7 +30,7 @@ class IndexView(TemplateView):
         q_order_by = self.request.GET.get('order_by')
         q_recommended = (q_order_by == "recommended")
 
-        media = None
+        reviews = None
 
         if not q_order_by or q_recommended:
             q_order_by = "-creation_time"
@@ -103,6 +103,19 @@ class CreateReviewView(CreateView):
         return HttpResponseRedirect(url)
 
 
+class UpdateReviewView(UpdateView):
+    model = Review
+    template_name = "reviews/review-form.html"
+    fields = ["title", "cover", "vote", "text"]
+
+    def get_success_url(self):
+        pk = self.object.pk
+
+        url = reverse("reviews:review_detail", args=[pk])
+
+        return url
+
+
 class ReviewDetailView(TemplateView):
     template_name = "reviews/review-detail.html"
 
@@ -111,6 +124,9 @@ class ReviewDetailView(TemplateView):
 
         review_pk = self.kwargs['pk']
         review = Review.objects.get(pk=review_pk)
+
+        if self.request.user == review.user:
+            context["modify_form"] = ReviewForm(review)
 
         review_txt_vulnerable = review.text.replace("\n", "<br>")
 

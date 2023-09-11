@@ -22,5 +22,6 @@ app_name = "reviews"
 urlpatterns = [
     path("review/<int:pk>", views.ReviewDetailView.as_view(), name="review_detail"),
     path("create/<int:pk>", views.CreateReviewView.as_view(), name="create_review"),
+    path("update/<int:pk>", views.UpdateReviewView.as_view(), name="update_review"),
     re_path("^$|^/$|^index/$", views.IndexView.as_view(), name="index")
 ]
