@@ -3,35 +3,60 @@
 {% block subtitle %}Opere{% endblock %}
 
 {% block main %}
-    <form class="row" method="get" action="{% url 'index:media' %}">
-        <div class="col-md-4">
-            <label for="_filter-name_">Cerca per nome:</label>
-            <input type="text" class="form-control" id="_filter-name_" name="name" value="{{ request.GET.q }}">
+    <div class="modal fade" id="filtersModal" tabindex="-1" aria-labelledby="filtersModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="filtersModalLabel">Filtri</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form method="get" action="{% url 'index:media' %}">
+                        <div class="mb-3" style="padding-left: 0; margin-right: 0">
+                            <label for="_filter-name_">Cerca per nome:</label>
+                            <input type="text" class="form-control" id="_filter-name_" name="name" value="{{ request.GET.q }}">
+                        </div>
+                        <div class="mb-3">
+                            <label for="_filter-type_">Seleziona tipo:</label>
+                            <select class="form-control" id="_filter-type_" name="type">
+                                <option value="">Tutti</option>
+                                <option value="vg">Videogioco</option>
+                                <option value="f">Film</option>
+                                <option value="tv">Serie TV</option>
+                                <option value="a">Anime</option>
+                            </select>
+                        </div>
+                        <div class="mb-3" style="padding-right: 0">
+                            <label for="_filter-order-by_">Ordina per:</label>
+                            <select class="form-control" id="_filter-order-by_" name="order_by">
+                                <option value="recommended">Raccomandati</option>
+                                <option value="name">Nome (A-Z)</option>
+                                <option value="-name">Nome (Z-A)</option>
+                                <option value="-users_vote">Voto utenti (decrescente)</option>
+                                <option value="users_vote">Voto utenti (crescente)</option>
+                                <option value="reviewers_vote">Voto recensori (decrescente)</option>
+                                <option value="reviewers_vote">Voto recensori (crescente)</option>
+                            </select>
+                        </div>
+
+                        {% comment %}<div class="mb-3">
+                            <div class="form-check">
+                                <label for="_filter-recommended_">Mostra solo raccomandati</label>
+                                <input type="checkbox" name="recommended" id="_filter-recommended_" class="form-control form-check-input">
+                            </div>
+                        </div>{% endcomment %}
+                        <input class="btn btn-secondary mb-3" type="reset" value="Ripristina filtri" style="width: 100%"><br>
+                        <button class="btn btn-primary mb-3" type="submit" style="width: 100%">Cerca</button>
+                    </form>
+                </div>
+            </div>
         </div>
-        <div class="col-md-4">
-            <label for="_filter-type_">Seleziona tipo:</label>
-            <select class="form-control" id="_filter-type_" name="type">
-                <option value="">Tutti</option>
-                <option value="vg">Videogioco</option>
-                <option value="f">Film</option>
-                <option value="tv">Serie TV</option>
-                <option value="a">Anime</option>
-            </select>
-        </div>
-        <div class="col-md-4">
-            <label for="_filter-order-by_">Ordina per:</label>
-            <select class="form-control" id="_filter-order-by_" name="order_by">
-                <option value="name">Nome (A-Z)</option>
-                <option value="-name">Nome (Z-A)</option>
-                <option value="-users_vote">Voto utenti (decrescente)</option>
-                <option value="users_vote">Voto utenti (crescente)</option>
-                <option value="reviewers_vote">Voto recensori (decrescente)</option>
-                <option value="reviewers_vote">Voto recensori (crescente)</option>
-            </select>
-        </div>
-        <input class="btn btn-secondary" type="reset" value="Ripristina filtri" style="margin-top: 5px;">
-        <button class="btn btn-primary" type="submit" style="margin-top: 5px;">Cerca</button>
-    </form>
+    </div>
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#filtersModal" style="width: 100%">
+        Mostra filtri
+    </button>
+
+
 
     {% if media %}
         <div class="album py-5 bg-body-tertiary">
@@ -80,10 +105,10 @@
 
                 {% if media.has_next %}
                     <li class="page-item">
-                        <a class="page-link" href="?page={{ media.next_page_number }}">Successiva</a>
+                        <a class="page-link" href="?page={{ media.next_page_number }}{% for key, value in request.GET.items %}&{{ key }}={{ value }}{% endfor %}">Successiva</a>
                     </li>
                     <li class="page-item">
-                        <a class="page-link" href="?page={{ media.paginator.num_pages }}">Ultima</a>
+                        <a class="page-link" href="?page={{ media.paginator.num_pages }}{% for key, value in request.GET.items %}&{{ key }}={{ value }}{% endfor %}">Ultima</a>
                     </li>
                 {% endif %}
             </ul>
