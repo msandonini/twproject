@@ -16,6 +16,15 @@
                 </a>
             {% endfor %}
 		</div>
+
+        {% if threads.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ threads.next_page_number }}{% for key, value in request.GET.items %}&{{ key }}={{ value }}{% endfor %}">Successiva</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?page={{ threads.paginator.num_pages }}{% for key, value in request.GET.items %}&{{ key }}={{ value }}{% endfor %}">Ultima</a>
+            </li>
+        {% endif %}
 	{% else %}
 		<h1>Nessuna discussione presente</h1>
 	{% endif %}

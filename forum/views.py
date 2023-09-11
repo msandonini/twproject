@@ -1,4 +1,5 @@
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
 from django.http import HttpResponse, HttpResponseRedirect, HttpResponseBadRequest
 from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
@@ -15,8 +16,14 @@ class IndexView(TemplateView):
     template_name = "forum/index.html"
 
     def get_context_data(self, **kwargs):
+        items_per_page = 10
+
+        paginator = Paginator(ForumThread.objects.order_by("-creation_time"), items_per_page)
+        page_number = self.request.GET.get('page')
+        page = paginator.get_page(page_number)
+
         context = {
-            "threads": ForumThread.objects.all()
+            "threads": page
         }
 
         return context
