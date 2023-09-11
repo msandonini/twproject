@@ -50,7 +50,7 @@ class ThreadDetailView(TemplateView):
     def post(self, request, pk):
         thread = get_object_or_404(ForumThread, pk=pk)
 
-        form = ThreadCommentForm(request.POST)
+        form = ThreadCommentForm(self.request.POST)
 
         if form.is_valid():
             comment = form.save(commit=False)

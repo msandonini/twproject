@@ -3,6 +3,7 @@
 {% block subtitle %}Opere{% endblock %}
 
 {% block main %}
+
     <div class="modal fade" id="filtersModal" tabindex="-1" aria-labelledby="filtersModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -56,15 +57,13 @@
         Mostra filtri
     </button>
 
-
-
     {% if media %}
         <div class="album py-5 bg-body-tertiary">
             <div class="container">
                 <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-md-4 row-cols-md-5 g-5">
                     {% for data in media %}
-                        <a href="{% url 'index:media_detail' data.id %}" style="text-decoration: inherit; color: inherit">
-                            <div class="col" style="height: 100%;">
+                        <div class="col">
+                            <a href="{% url 'index:media_detail' data.id %}" style="text-decoration: inherit; color: inherit">
                                 <div class="card shadow-sm" style="height: 100%;">
                                     {% if data.cover %}
                                         <img src="/media/{{ data.cover }}" alt="" style="object-fit: cover">
@@ -82,8 +81,8 @@
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                        </a>
+                            </a>
+                        </div>
                     {% endfor %}
                 </div>
             </div>
@@ -92,10 +91,10 @@
             <ul class="pagination">
                 {% if media.has_previous %}
                     <li class="page-item">
-                        <a class="page-link" href="?page=1">Prima</a>
+                        <a class="page-link" href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Prima</a>
                     </li>
                     <li class="page-item">
-                        <a class="page-link" href="?page={{ media.previous_page_number }}">Precedente</a>
+                        <a class="page-link" href="?page={{ media.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Precedente</a>
                     </li>
                 {% endif %}
 
@@ -105,10 +104,10 @@
 
                 {% if media.has_next %}
                     <li class="page-item">
-                        <a class="page-link" href="?page={{ media.next_page_number }}{% for key, value in request.GET.items %}&{{ key }}={{ value }}{% endfor %}">Successiva</a>
+                        <a class="page-link" href="?page={{ media.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Successiva</a>
                     </li>
                     <li class="page-item">
-                        <a class="page-link" href="?page={{ media.paginator.num_pages }}{% for key, value in request.GET.items %}&{{ key }}={{ value }}{% endfor %}">Ultima</a>
+                        <a class="page-link" href="?page={{ media.paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Ultima</a>
                     </li>
                 {% endif %}
             </ul>

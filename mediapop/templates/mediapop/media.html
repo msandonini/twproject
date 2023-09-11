@@ -5,177 +5,185 @@
 {% block subtitle %}Opera: {{ media.name }}{% endblock %}
 
 {% block main %}
-    <div class="container mt-5">
+    <div class="row">
         {% if media.cover %}
-            <img class="img-fluid" src="/media/{{ media.cover }}" alt="">
+            <img class="img-fluid col-8" src="/media/{{ media.cover }}" alt="" style="object-fit: cover">
         {% endif %}
-        <h1 class="mt-3">{{ media.name }}</h1>
-        <h5 class="mt-3">{{ media.get_media_type_display }}</h5>
-        <div class="mt-3">
-            <p>Voto utenti: {% if users_vote %}{{ users_vote|floatformat:1 }}{% else %}-{% endif %}/10</p>
-            <p>Voto recensori: {% if reviewers_vote %}{{ reviewers_vote|floatformat:1 }}{% else %}-{% endif %}/10</p>
+        <div class="col-4">
+            <h1 class="mt-3">{{ media.name }}</h1>
+            <h5 class="mt-3">{{ media.get_media_type_display }}</h5>
+            <div class="mt-3">
+                <p>Voto utenti: {% if users_vote %}{{ users_vote|floatformat:1 }}{% else %}-{% endif %}/10</p>
+                <p>Voto recensori: {% if reviewers_vote %}{{ reviewers_vote|floatformat:1 }}{% else %}-{% endif %}/10</p>
+            </div>
+
+            {% if user|has_group:"Reviewer" %}
+                <button id="_btn-review_" type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createReviewModal">
+                    Recensisci
+                </button>
+
+                <div class="modal fade" id="createReviewModal" tabindex="-1" role="dialog" aria-labelledby="createReviewModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-lg" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="createReviewModalLabel">Recensisci {{ media.name }}</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body" id="_modal-review-form_">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <script>
+                    const btn_review = document.getElementById("_btn-review_");
+                    const review_form = document.getElementById("_modal-review-form_")
+
+                    if (btn_review)
+                        btn_review.addEventListener('click', () => {
+                            console.log("Premuto");
+                            _showReviewForm();
+                        });
+
+                    function _showReviewForm() {
+                        console.log("showReviewForm()");
+                        fetch("{% url 'reviews:create_review' media.id %}")
+                        .then(response => response.text())
+                        .then(data => {
+                            review_form.innerHTML = data;
+
+                            const form = document.getElementById("_form-review_");
+
+                            form.querySelectorAll("input").forEach(input => {
+                                input.classList.add("form-control");
+                            });
+                            form.querySelectorAll("textarea").forEach(input => {
+                                input.classList.add("form-control");
+                            });
+                            form.querySelectorAll("button").forEach(btn => {
+                                btn.classList.add("btn");
+                                btn.classList.add("btn-primary");
+                            });
+
+                            form.addEventListener("submit", async (e) => {
+                                const result = document.getElementById("_div-form-result_");
+
+                                e.preventDefault();
+
+                                const formData = new FormData(form);
+                                try {
+                                    const response = await fetch("{% url 'reviews:create_review' media.id %}", {
+                                        method: "POST",
+                                        body: formData,
+                                    });
+
+                                    if (response.ok) {
+                                        // Successful
+                                        const data = await response.text()
+
+                                        if (response.redirected) {
+                                            // Successful
+                                            window.location.assign(response.url)
+
+                                        } else {
+                                            form_container.innerHTML = data;
+                                            _initForm();
+                                        }
+
+                                    } else {
+                                        // Failed login
+                                        const data = await response.json();
+                                        result.textContent = data.message;
+                                    }
+                                } catch (error) {
+                                    console.error("Error:", error);
+                                    result.textContent = "An error occurred.";
+                                }
+                            });
+                        });
+                    }
+                </script>
+            {% endif %}
+            {% if user.is_authenticated %}
+                <div class="mt-3">
+                    <!-- TODO: Implement user voting -->
+                    <button id="_btn-open-thread_" type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createThreadModal">
+                        Inizia una discussione
+                    </button>
+
+                    <div class="modal fade" id="createThreadModal" tabindex="-1" role="dialog" aria-labelledby="createThreadModalLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-lg" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="createThreadModalLabel">Apri una discussione su {{ media.name }}</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body" id="_modal-create-thread-form_">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <script>
+                    const btn_thread = document.getElementById("_btn-open-thread_");
+                    const thread_form = document.getElementById("_modal-create-thread-form_")
+
+                    if (btn_thread)
+                        btn_thread.addEventListener('click', () => {
+                            _showThreadForm();
+                        });
+
+                    function _showThreadForm() {
+                        fetch("{% url 'forum:create' media.id %}")
+                        .then(response => response.text())
+                        .then(data => {
+                            thread_form.innerHTML = data;
+
+                            const form = document.getElementById("_form-thread_");
+
+                            form.querySelectorAll("input").forEach(input => {
+                                input.classList.add("form-control");
+                            });
+                            form.querySelectorAll("textarea").forEach(input => {
+                                input.classList.add("form-control");
+                            });
+                            form.querySelectorAll("button").forEach(btn => {
+                                btn.classList.add("btn");
+                                btn.classList.add("btn-primary");
+                            });
+
+                            form.addEventListener("submit", async (e) => {
+                                const result = document.getElementById("_div-form-result_");
+
+                                e.preventDefault();
+
+                                const formData = new FormData(form);
+                                try {
+                                    const response = await fetch("{% url 'forum:create' media.id %}", {
+                                        method: "POST",
+                                        body: formData,
+                                    });
+
+                                    if (response.redirected) {
+                                        // Successful
+                                        window.location.assign(response.url)
+
+                                    } else {
+                                        // Failed
+                                        const data = await response.json();
+                                        result.textContent = data.message;
+                                    }
+                                } catch (error) {
+                                    console.error("Error:", error);
+                                    result.textContent = "An error occurred.";
+                                }
+                            });
+                        });
+                    }
+                </script>
+            {% endif %}
         </div>
     </div>
 
-    {% if user|has_group:"Reviewer" %}
-        <button id="_btn-review_" type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createReviewModal">
-            Recensisci
-        </button>
 
-        <div class="modal fade" id="createReviewModal" tabindex="-1" role="dialog" aria-labelledby="createReviewModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-lg" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="createReviewModalLabel">Recensisci {{ media.name }}</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body" id="_modal-review-form_">
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <script>
-            const btn_review = document.getElementById("_btn-review_");
-            const review_form = document.getElementById("_modal-review-form_")
-
-            if (btn_review)
-                btn_review.addEventListener('click', () => {
-                    _showReviewForm();
-                });
-
-            function _showReviewForm() {
-                fetch("{% url 'reviews:create_review' media.id %}")
-                .then(response => response.text())
-                .then(data => {
-                    review_form.innerHTML = data;
-
-                    const form = document.getElementById("_form-review_");
-
-                    form.querySelectorAll("input").forEach(input => {
-                        input.classList.add("form-control");
-                    });
-                    form.querySelectorAll("textarea").forEach(input => {
-                        input.classList.add("form-control");
-                    });
-                    form.querySelectorAll("button").forEach(btn => {
-                        btn.classList.add("btn");
-                        btn.classList.add("btn-primary");
-                    });
-
-                    form.addEventListener("submit", async (e) => {
-                        const result = document.getElementById("_div-form-result_");
-
-                        e.preventDefault();
-
-                        const formData = new FormData(form);
-                        try {
-                            const response = await fetch("{% url 'reviews:create_review' media.id %}", {
-                                method: "POST",
-                                body: formData,
-                            });
-
-                            if (response.ok) {
-                                // Successful
-                                const data = await response.text()
-
-                                if (data === "") {
-                                    result.textContent = "Login successful!";
-                                    location.reload();
-                                } else {
-                                    form_container.innerHTML = data;
-                                    _initForm();
-                                }
-
-                            } else {
-                                // Failed login
-                                const data = await response.json();
-                                result.textContent = data.message;
-                            }
-                        } catch (error) {
-                            console.error("Error:", error);
-                            result.textContent = "An error occurred.";
-                        }
-                    });
-                });
-            }
-        </script>
-    {% elif user.is_authenticated %}
-        <div class="mt-3">
-            <!-- TODO: Implement user voting -->
-            <button id="_btn-open-thread_" type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createThreadModal">
-                Inizia una discussione
-            </button>
-
-            <div class="modal fade" id="createThreadModal" tabindex="-1" role="dialog" aria-labelledby="createThreadModalLabel" aria-hidden="true">
-                <div class="modal-dialog modal-lg" role="document">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="createThreadModalLabel">Apri una discussione su {{ media.name }}</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body" id="_modal-create-thread-form_">
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <script>
-            const btn_thread = document.getElementById("_btn-open-thread_");
-            const thread_form = document.getElementById("_modal-create-thread-form_")
-
-            if (btn_thread)
-                btn_thread.addEventListener('click', () => {
-                    _showReviewForm();
-                });
-
-            function _showReviewForm() {
-                fetch("{% url 'forum:create' media.id %}")
-                .then(response => response.text())
-                .then(data => {
-                    thread_form.innerHTML = data;
-
-                    const form = document.getElementById("_form-thread_");
-
-                    form.querySelectorAll("input").forEach(input => {
-                        input.classList.add("form-control");
-                    });
-                    form.querySelectorAll("textarea").forEach(input => {
-                        input.classList.add("form-control");
-                    });
-                    form.querySelectorAll("button").forEach(btn => {
-                        btn.classList.add("btn");
-                        btn.classList.add("btn-primary");
-                    });
-
-                    form.addEventListener("submit", async (e) => {
-                        const result = document.getElementById("_div-form-result_");
-
-                        e.preventDefault();
-
-                        const formData = new FormData(form);
-                        try {
-                            const response = await fetch("{% url 'forum:create' media.id %}", {
-                                method: "POST",
-                                body: formData,
-                            });
-
-                            if (response.redirected) {
-                                // Successful
-                                window.location.assign(response.url)
-
-                            } else {
-                                // Failed
-                                const data = await response.json();
-                                result.textContent = data.message;
-                            }
-                        } catch (error) {
-                            console.error("Error:", error);
-                            result.textContent = "An error occurred.";
-                        }
-                    });
-                });
-            }
-        </script>
-    {% endif %}
 {% endblock %}

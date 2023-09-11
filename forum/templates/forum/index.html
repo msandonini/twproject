@@ -4,6 +4,7 @@
 
 {% block main %}
 	{% if threads %}
+        <!-- TODO: Item filtering -->
         <div class="list-group">
             {% for thread in threads %}
                 <a href="{% url 'forum:thread' thread.id %}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-start">
@@ -17,14 +18,31 @@
             {% endfor %}
 		</div>
 
-        {% if threads.has_next %}
-            <li class="page-item">
-                <a class="page-link" href="?page={{ threads.next_page_number }}{% for key, value in request.GET.items %}&{{ key }}={{ value }}{% endfor %}">Successiva</a>
-            </li>
-            <li class="page-item">
-                <a class="page-link" href="?page={{ threads.paginator.num_pages }}{% for key, value in request.GET.items %}&{{ key }}={{ value }}{% endfor %}">Ultima</a>
-            </li>
-        {% endif %}
+        <div class="d-flex justify-content-center mt-4">
+            <ul class="pagination">
+                {% if threads.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Prima</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ threads.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Precedente</a>
+                    </li>
+                {% endif %}
+
+                <li class="page-item active">
+                    <span class="page-link">{{ threads.number }}</span>
+                </li>
+
+                {% if threads.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ threads.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Successiva</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ threads.paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Ultima</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
 	{% else %}
 		<h1>Nessuna discussione presente</h1>
 	{% endif %}

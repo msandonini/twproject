@@ -4,33 +4,101 @@
 
 {% block main %}
     {% if reviews %}
-        <!-- TODO: Item filtering -->
-
-        <div class="album py-5 bg-body-tertiary">
-            <div class="container">
-                <div {% comment %}class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3"{% endcomment %}>
-                    {% for data in reviews %}
-                        <a href="{% url 'reviews:review_detail' data.id %}" style="text-decoration: inherit; color: inherit">
-                            <div class="card mb-3" style="max-width: 100%;">
-                                <div class="row g-0">
-                                    {% if data.cover %}
-                                        <div class="col-md-2">
-                                            <img src="/media/{{ data.cover }}" alt="" class="img-fluid rounded-start">
-                                        </div>
-                                    {% endif %}
-                                <div class="col-md-8">
-                                    <div class="card-body">
-                                        <h5 class="card-title">{{ data.title }}</h5>
-                                        <h6 class="card-subtitle text-muted">{{ data.media.name }}</h6>
-                                        <p class="card-text">{{ data.vote }}</p>
-                                    </div>
-                                </div>
-                                </div>
+        <div class="modal fade" id="filtersModal" tabindex="-1" aria-labelledby="filtersModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="filtersModalLabel">Filtri</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form method="get" action="{% url 'reviews:index' %}">
+                            <div class="mb-3" style="padding-left: 0; margin-right: 0">
+                                <label for="_filter-name_">Cerca per nome:</label>
+                                <input type="text" class="form-control" id="_filter-name_" name="name" value="{{ request.GET.q }}">
                             </div>
-                        </a>
-                    {% endfor %}
+                            <div class="mb-3">
+                                <label for="_filter-type_">Seleziona tipo:</label>
+                                <select class="form-control" id="_filter-type_" name="type">
+                                    <option value="">Tutti</option>
+                                    <option value="vg">Videogioco</option>
+                                    <option value="f">Film</option>
+                                    <option value="tv">Serie TV</option>
+                                    <option value="a">Anime</option>
+                                </select>
+                            </div>
+                            <div class="mb-3" style="padding-right: 0">
+                                <label for="_filter-order-by_">Ordina per:</label>
+                                <select class="form-control" id="_filter-order-by_" name="order_by">
+                                    <option value="recommended">Raccomandati</option>
+                                    <option value="title">Titolo (A-Z)</option>
+                                    <option value="-title">Titolo (Z-A)</option>
+                                    <option value="-vote">Voto (decrescente)</option>
+                                    <option value="vote">Voto (crescente)</option>
+                                    <option value="-creation_time">Data di pubblicazione (più recente)</option>
+                                    <option value="creation_time">Data di pubblicazione (più vecchia)</option>
+                                </select>
+                            </div>
+                            <input class="btn btn-secondary mb-3" type="reset" value="Ripristina filtri" style="width: 100%"><br>
+                            <button class="btn btn-primary mb-3" type="submit" style="width: 100%">Cerca</button>
+                        </form>
+                    </div>
                 </div>
             </div>
+        </div>
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#filtersModal" style="width: 100%">
+            Mostra filtri
+        </button>
+
+        <div class="album pt-4 bg-body-tertiary">
+            <div class="container">
+                {% for data in reviews %}
+                    <a href="{% url 'reviews:review_detail' data.id %}" style="text-decoration: inherit; color: inherit">
+                        <div class="card mb-3" style="max-width: 100%;">
+                            <div class="row g-0">
+                                {% if data.cover %}
+                                    <div class="col-md-2">
+                                        <img src="/media/{{ data.cover }}" alt="" class="img-fluid rounded-start">
+                                    </div>
+                                {% endif %}
+                                <div class="col-md-10" style="padding-bottom: 0">
+                                    <div class="card-body py-1">
+                                        <h5 class="card-title">{{ data.title }}</h5>
+                                        <h6 class="card-subtitle text-muted">{{ data.media.name }}</h6>
+                                        <p class="card-text" style="margin: 0">{{ data.vote }}</p>
+                                    </div>
+                                </div>
+                                <div class="card-footer bg-transparent text-muted">{{ data.creation_time }}</div>
+                            </div>
+                        </div>
+                    </a>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="d-flex justify-content-center mt-4">
+            <ul class="pagination">
+                {% if reviews.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Prima</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ reviews.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Precedente</a>
+                    </li>
+                {% endif %}
+
+                <li class="page-item active">
+                    <span class="page-link">{{ reviews.number }}</span>
+                </li>
+
+                {% if reviews.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ reviews.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Successiva</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ reviews.paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Ultima</a>
+                    </li>
+                {% endif %}
+            </ul>
         </div>
     {% else %}
         <h1>Nessuna recensione presente</h1>

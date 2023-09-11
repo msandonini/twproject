@@ -60,7 +60,7 @@
     {% endif %}
     <div class="list-group m-3">
         {% for comment in comments %}
-            <div class="list-group-item ms-2 me-auto">
+            <div class="list-group-item">
                 <div class="fw-bold">{{ comment.user.username }}</div>
                 <small>{{ comment.timestamp }}</small><br>
                 {{ comment.content }}
