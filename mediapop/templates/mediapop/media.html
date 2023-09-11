@@ -4,6 +4,8 @@
 
 {% block subtitle %}Opera: {{ media.name }}{% endblock %}
 
+<!-- TODO: Fix for mobile -->
+
 {% block main %}
     <div class="row">
         {% if media.cover %}
@@ -17,8 +19,130 @@
                 <p>Voto recensori: {% if reviewers_vote %}{{ reviewers_vote|floatformat:1 }}{% else %}-{% endif %}/10</p>
             </div>
 
+            {% if user.is_authenticated %}
+                <div>
+                    <form id="_form-user-vote_" class="row">
+                        {% csrf_token %}
+                        <div class="col-md-auto pr-0">
+                            <label for="_input-vote_">Come lo valuti?</label>
+                        </div>
+                        <div class="col-md-auto px-0">
+                            <input class="form-control" type="number" name="vote" id="_input-vote_" step="0.1" min="0"
+                                   max="10" {% if vote %}value="{{ vote }}"{% endif %} >
+                        </div>
+                        <div class="col-md-auto">
+                            <button type="submit" class="btn btn-primary" id="_btn-vote-send_">Invia il voto</button>
+                        </div>
+                    </form>
+                    <div id="_result-user-vote_"></div>
+
+                    <script>
+                        const form_user_vote = document.getElementById("_form-user-vote_");
+                        const user_vote_result = document.getElementById("_result-user-vote_");
+
+                        form_user_vote.addEventListener("submit", async (e) => {
+                            e.preventDefault();
+
+                            const formData = new FormData(form_user_vote);
+                            try {
+                                    const response = await fetch("{% url 'index:media_detail' media.id %}", {
+                                        method: "POST",
+                                        body: formData,
+                                    });
+
+                                    if (response.ok) {
+                                        location.reload();
+                                    } else {
+                                        // Failed
+                                        user_vote_result.textContent = "Errore nell'invio del voto."
+                                    }
+                                } catch (error) {
+                                    console.error("Error:", error);
+                                    user_vote_result.innerText = "Errore nell'invio del voto.";
+                                }
+                        })
+                    </script>
+                </div>
+
+                <div class="mt-2">
+                    <button id="_btn-open-thread_" type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createThreadModal">
+                        Inizia una discussione
+                    </button>
+
+                    <div class="modal fade" id="createThreadModal" tabindex="-1" role="dialog" aria-labelledby="createThreadModalLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-lg" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="createThreadModalLabel">Apri una discussione su {{ media.name }}</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body" id="_modal-create-thread-form_">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <script>
+                    const btn_thread = document.getElementById("_btn-open-thread_");
+                    const thread_form = document.getElementById("_modal-create-thread-form_")
+
+                    if (btn_thread)
+                        btn_thread.addEventListener('click', () => {
+                            _showThreadForm();
+                        });
+
+                    function _showThreadForm() {
+                        fetch("{% url 'forum:create' media.id %}")
+                        .then(response => response.text())
+                        .then(data => {
+                            thread_form.innerHTML = data;
+
+                            const form = document.getElementById("_form-thread_");
+
+                            form.querySelectorAll("input").forEach(input => {
+                                input.classList.add("form-control");
+                            });
+                            form.querySelectorAll("textarea").forEach(input => {
+                                input.classList.add("form-control");
+                            });
+                            form.querySelectorAll("button").forEach(btn => {
+                                btn.classList.add("btn");
+                                btn.classList.add("btn-primary");
+                            });
+
+                            form.addEventListener("submit", async (e) => {
+                                const result = document.getElementById("_div-form-result_");
+
+                                e.preventDefault();
+
+                                const formData = new FormData(form);
+                                try {
+                                    const response = await fetch("{% url 'forum:create' media.id %}", {
+                                        method: "POST",
+                                        body: formData,
+                                    });
+
+                                    if (response.redirected) {
+                                        // Successful
+                                        window.location.assign(response.url)
+
+                                    } else {
+                                        // Failed
+                                        const data = await response.json();
+                                        result.textContent = data.message;
+                                    }
+                                } catch (error) {
+                                    console.error("Error:", error);
+                                    result.textContent = "An error occurred.";
+                                }
+                            });
+                        });
+                    }
+                </script>
+            {% endif %}
+
             {% if user|has_group:"Reviewer" %}
-                <button id="_btn-review_" type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createReviewModal">
+                <button id="_btn-review_" type="button" class="btn btn-primary mt-2" data-bs-toggle="modal" data-bs-target="#createReviewModal">
                     Recensisci
                 </button>
 
@@ -92,84 +216,6 @@
 
                                     } else {
                                         // Failed login
-                                        const data = await response.json();
-                                        result.textContent = data.message;
-                                    }
-                                } catch (error) {
-                                    console.error("Error:", error);
-                                    result.textContent = "An error occurred.";
-                                }
-                            });
-                        });
-                    }
-                </script>
-            {% endif %}
-            {% if user.is_authenticated %}
-                <div class="mt-3">
-                    <!-- TODO: Implement user voting -->
-                    <button id="_btn-open-thread_" type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createThreadModal">
-                        Inizia una discussione
-                    </button>
-
-                    <div class="modal fade" id="createThreadModal" tabindex="-1" role="dialog" aria-labelledby="createThreadModalLabel" aria-hidden="true">
-                        <div class="modal-dialog modal-lg" role="document">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title" id="createThreadModalLabel">Apri una discussione su {{ media.name }}</h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                </div>
-                                <div class="modal-body" id="_modal-create-thread-form_">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <script>
-                    const btn_thread = document.getElementById("_btn-open-thread_");
-                    const thread_form = document.getElementById("_modal-create-thread-form_")
-
-                    if (btn_thread)
-                        btn_thread.addEventListener('click', () => {
-                            _showThreadForm();
-                        });
-
-                    function _showThreadForm() {
-                        fetch("{% url 'forum:create' media.id %}")
-                        .then(response => response.text())
-                        .then(data => {
-                            thread_form.innerHTML = data;
-
-                            const form = document.getElementById("_form-thread_");
-
-                            form.querySelectorAll("input").forEach(input => {
-                                input.classList.add("form-control");
-                            });
-                            form.querySelectorAll("textarea").forEach(input => {
-                                input.classList.add("form-control");
-                            });
-                            form.querySelectorAll("button").forEach(btn => {
-                                btn.classList.add("btn");
-                                btn.classList.add("btn-primary");
-                            });
-
-                            form.addEventListener("submit", async (e) => {
-                                const result = document.getElementById("_div-form-result_");
-
-                                e.preventDefault();
-
-                                const formData = new FormData(form);
-                                try {
-                                    const response = await fetch("{% url 'forum:create' media.id %}", {
-                                        method: "POST",
-                                        body: formData,
-                                    });
-
-                                    if (response.redirected) {
-                                        // Successful
-                                        window.location.assign(response.url)
-
-                                    } else {
-                                        // Failed
                                         const data = await response.json();
                                         result.textContent = data.message;
                                     }

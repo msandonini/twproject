@@ -10,7 +10,7 @@
                 <a href="{% url 'forum:thread' thread.id %}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-start">
                     <div class="ms-2 me-auto">
                         <div class="fw-bold">{{ thread.title }}</div>
-                        @{{ thread.author.username }}
+                        {{ thread.media.name }} - @{{ thread.author.username }}
                     </div>
                     {{ thread.creation_time }}
                     <!-- TODO: Add button to permit moderators to delete thread -->

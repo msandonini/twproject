@@ -22,7 +22,7 @@ class Media(models.Model):
 class MediaVote(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     media = models.ForeignKey(Media, on_delete=models.CASCADE)
-    vote = models.IntegerField(validators=[MinValueValidator(0.0), MaxValueValidator(10.0)])
+    vote = models.DecimalField(decimal_places=1, max_digits=3, validators=[MinValueValidator(0.0), MaxValueValidator(10.0)])
 
     class Meta:
         unique_together = ('user', 'media')

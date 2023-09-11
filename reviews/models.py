@@ -22,7 +22,8 @@ class Review(models.Model):
 class ReviewComment(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     review = models.ForeignKey(Review, on_delete=models.CASCADE)
-    text = models.TextField(max_length=3000)
+    text = models.TextField()
+    timestamp = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         unique_together = ('user', 'review')

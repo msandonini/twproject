@@ -118,6 +118,71 @@
             </p>
         </div>
 
-        <!-- TODO: Add user comments -->
+        <hr>
+        <h4>Commenti</h4>
+
+        {% if user.is_authenticated %}
+
+            <form id="_form-comment_" method="post">
+                {% csrf_token %}
+                {{ comment_form.as_p }}
+                <button type="submit">Pubblica commento</button>
+            </form>
+            <div id="_div-form-comment-result_"></div>
+            <script>
+                const form_comment = document.getElementById("_form-comment_");
+
+                if (form_comment) {
+                    form_comment.querySelectorAll("input").forEach(input => {
+                        input.classList.add("form-control");
+                    });
+                    form_comment.querySelectorAll("textarea").forEach(input => {
+                        input.classList.add("form-control");
+                        input.rows = 3;
+                    });
+                    form_comment.querySelectorAll("button").forEach(btn => {
+                        btn.classList.add("btn");
+                        btn.classList.add("btn-primary");
+                    });
+
+                    form_comment.addEventListener("submit", async (e) => {
+                        const result = document.getElementById("_div-form-comment-result_");
+
+                        e.preventDefault();
+
+                        const formData = new FormData(form_comment);
+                        try  {
+                            const response = await fetch("{% url 'reviews:review_detail' review.id %}", {
+                                method: "POST",
+                                body: formData
+                            });
+
+                            if (response.ok) {
+                                // Successful
+                                window.location.reload();
+                            } else {
+                                // Failed
+                                result.textContent = "Errore nella pubblicazione del commento.";
+                            }
+                        } catch (error) {
+                            console.log("Error: ", error);
+                            result.textContent = "Errore nella pubblicazione del commento.";
+                        }
+                    });
+                }
+            </script>
+
+        {% endif %}
+
+        <div class="list-group m-3">
+            {% for comment in comments %}
+                <div class="list-group-item">
+                    <div class="fw-bold">{{ comment.user.username }}</div>
+                    <small>{{ comment.timestamp }}</small><br>
+                    {{ comment.text }}
+                </div>
+                <!-- TODO: Add button to permit moderators to delete comment -->
+            {% endfor %}
+        </div>
     </div>
 {% endblock %}

@@ -1,10 +1,12 @@
 from django.contrib import auth
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.models import Group
 from django.core.paginator import Paginator
 from django.db.models import Avg, Count, F, When, Value, IntegerField, Case
 from django.http import HttpResponse
 from django.shortcuts import render
+from django.utils.decorators import method_decorator
 from django.views.generic import TemplateView, FormView, DetailView
 
 from forum.models import ThreadComment, ForumThread
@@ -33,7 +35,7 @@ class MediaView(TemplateView):
         media = None
 
         if not q_order_by or q_recommended:
-            q_order_by = "name"
+            q_order_by = "-users_vote"
 
         if q_recommended and request.user.is_authenticated:
             # -- RECOMMENDATION SYSTEM --
@@ -98,9 +100,41 @@ class MediaDetailView(DetailView):
         context["reviewers_vote"] = Review.objects.filter(media=context.get("object")).aggregate(Avg('vote'))[
             'vote__avg']
 
+        if self.request.user.is_authenticated:
+            user = self.request.user
+            media = context.get("object")
+
+            mediavote = MediaVote.objects.filter(media=media, user=user)
+
+
+            if mediavote.exists():
+                context["vote"] = mediavote.first().vote
+
         return context
 
-    # TODO: Write POST to accept user votes
+    @method_decorator(login_required)
+    def post(self, request, pk):
+        # TODO: Write POST to accept user votes
+        vote = float(request.POST.get("vote"))
+
+        print(vote)
+
+        user = request.user
+        media = Media.objects.get(pk=pk)
+
+        media_vote, created = MediaVote.objects.get_or_create(
+            user_id=user.id,
+            media_id=media.id,
+            defaults={'vote': vote}
+        )
+
+        if not created:
+            media_vote.vote = vote
+            media_vote.save()
+
+        print(media_vote.vote)
+
+        return HttpResponse("")
 
 
 class UserLoginView(FormView):
@@ -166,7 +200,7 @@ def get_recommendation_scores(request):
 
         filtered_media_vote = media_vote_avg.filter(media__media_type=media_type[0])
         if len(filtered_media_vote) > 0:
-            media_vote_value = filtered_media_vote[0]['vote_avg']
+            media_vote_value = float(filtered_media_vote[0]['vote_avg'])
 
         recommendation_scores[media_type] = (thread_comment_value * thread_comment_weight +
                                              forum_thread_value * forum_thread_weight +

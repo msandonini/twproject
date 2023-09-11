@@ -4,8 +4,8 @@ import bleach
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db.models import Avg, Q
-from django.http import JsonResponse, HttpResponse, HttpResponseRedirect
-from django.shortcuts import render, redirect
+from django.http import JsonResponse, HttpResponse, HttpResponseRedirect, HttpResponseBadRequest
+from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse_lazy, reverse
 from django.utils.decorators import method_decorator
 from django.views.generic import TemplateView, FormView, CreateView, UpdateView
@@ -13,8 +13,8 @@ from django.views.generic import TemplateView, FormView, CreateView, UpdateView
 from mediapop.models import Media
 from mediapop.views import get_recommendation_scores
 from reviews.decorators import reviewer_required
-from reviews.forms import ReviewForm
-from reviews.models import Review
+from reviews.forms import ReviewForm, ReviewCommentForm
+from reviews.models import Review, ReviewComment
 
 
 # Create your views here.
@@ -139,4 +139,24 @@ class ReviewDetailView(TemplateView):
 
         context["review"] = review
 
+        comments = ReviewComment.objects.filter(review_id=review_pk).order_by("-timestamp")
+        context["comments"] = comments
+        context["comment_form"] = ReviewCommentForm()
+
         return context
+
+    def post(self, request, pk):
+        review = get_object_or_404(Review, pk=pk)
+
+        form = ReviewCommentForm(self.request.POST)
+
+        if form.is_valid():
+            comment = form.save(commit=False)
+            comment.review = review
+            comment.user = request.user
+
+            comment.save()
+
+            return HttpResponse("")
+        else:
+            return HttpResponseBadRequest("Invalid form")
