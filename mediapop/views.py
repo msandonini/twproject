@@ -114,7 +114,6 @@ class MediaDetailView(DetailView):
 
     @method_decorator(login_required)
     def post(self, request, pk):
-        # TODO: Write POST to accept user votes
         vote = float(request.POST.get("vote"))
 
         user = request.user
