@@ -106,7 +106,6 @@ class MediaDetailView(DetailView):
 
             mediavote = MediaVote.objects.filter(media=media, user=user)
 
-
             if mediavote.exists():
                 context["vote"] = mediavote.first().vote
 
@@ -128,8 +127,6 @@ class MediaDetailView(DetailView):
         if not created:
             media_vote.vote = vote
             media_vote.save()
-
-        print(media_vote.vote)
 
         return HttpResponse("")
 
@@ -168,6 +165,9 @@ def get_recommendation_scores(request):
         comment_count=Count('id'))
     forum_thread_counts = ForumThread.objects.filter(author=request.user).values('media__media_type').annotate(
         thread_count=Count('id'))
+    media_vote_counts = MediaVote.objects.filter(user=request.user).values('media__media_type').annotate(
+        vote_count=Count('media')
+    )
     media_vote_avg = MediaVote.objects.filter(user=request.user).values('media__media_type').annotate(
         vote_avg=Avg('vote'))
 
@@ -176,11 +176,13 @@ def get_recommendation_scores(request):
         thread_comment_weight = 0.1
         forum_thread_weight = 0.3
         review_comment_weight = 0.1
-        media_vote_weight = 0.4
+        vote_count_weight = 0.4
+        media_vote_weight = 0.2
 
         thread_comment_value = 0
         forum_thread_value = 0
         review_comment_value = 0
+        vote_count_value = 0
         media_vote_value = 0
 
         filtered_thread_comment = thread_comment_counts.filter(thread__media__media_type=media_type[0])
@@ -195,14 +197,21 @@ def get_recommendation_scores(request):
         if len(filtered_review_comment) > 0:
             review_comment_value = filtered_review_comment[0]['comment_count']
 
+        filtered_vote_count = media_vote_counts.filter(media__media_type=media_type[0])
+        if len(filtered_vote_count) > 0:
+            vote_count_value = filtered_vote_count[0]['vote_count']
+
         filtered_media_vote = media_vote_avg.filter(media__media_type=media_type[0])
         if len(filtered_media_vote) > 0:
             media_vote_value = float(filtered_media_vote[0]['vote_avg'])
 
-        recommendation_scores[media_type] = (thread_comment_value * thread_comment_weight +
-                                             forum_thread_value * forum_thread_weight +
-                                             review_comment_value * review_comment_weight +
-                                             media_vote_value * media_vote_weight)
+        score = thread_comment_value * thread_comment_weight + \
+                forum_thread_value * forum_thread_weight + \
+                review_comment_value * review_comment_weight + \
+                vote_count_value * vote_count_weight + \
+                media_vote_value * media_vote_weight
+
+        recommendation_scores[media_type] = score
 
     recommendation_scores = sorted(recommendation_scores.keys(),
                                    key=lambda x: recommendation_scores[x],
