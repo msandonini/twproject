@@ -1,10 +1,54 @@
 {% extends 'base.html' %}
+{% load auth_extras %}
 
 {% block subtitle %}Forum{% endblock %}
 
 {% block main %}
+    <div class="modal fade" id="filtersModal" tabindex="-1" aria-labelledby="filtersModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="filtersModalLabel">Filtri</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form method="get" action="{% url 'forum:index' %}">
+                        <div class="mb-3" style="padding-left: 0; margin-right: 0">
+                            <label for="_filter-name_">Cerca per nome:</label>
+                            <input type="text" class="form-control" id="_filter-name_" name="name" value="{{ request.GET.q }}">
+                        </div>
+                        <div class="mb-3">
+                            <label for="_filter-type_">Seleziona tipo:</label>
+                            <select class="form-control" id="_filter-type_" name="type">
+                                <option value="">Tutti</option>
+                                <option value="vg">Videogioco</option>
+                                <option value="f">Film</option>
+                                <option value="tv">Serie TV</option>
+                                <option value="a">Anime</option>
+                            </select>
+                        </div>
+                        <div class="mb-3" style="padding-right: 0">
+                            <label for="_filter-order-by_">Ordina per:</label>
+                            <select class="form-control" id="_filter-order-by_" name="order_by">
+                                <option value="recommended">Raccomandati</option>
+                                <option value="title">Titolo (A-Z)</option>
+                                <option value="-title">Titolo (Z-A)</option>
+                                <option value="-creation_time">Data di pubblicazione (più recente)</option>
+                                <option value="creation_time">Data di pubblicazione (più vecchia)</option>
+                            </select>
+                        </div>
+                        <input class="btn btn-secondary mb-3" type="reset" value="Ripristina filtri" style="width: 100%"><br>
+                        <button class="btn btn-primary mb-3" type="submit" style="width: 100%">Cerca</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <button type="button" class="btn btn-primary mb-2" data-bs-toggle="modal" data-bs-target="#filtersModal" style="width: 100%">
+        Mostra filtri
+    </button>
+
 	{% if threads %}
-        <!-- TODO: Item filtering -->
         <div class="list-group">
             {% for thread in threads %}
                 <a href="{% url 'forum:thread' thread.id %}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-start">
@@ -13,9 +57,13 @@
                         {{ thread.media.name }} - @{{ thread.author.username }}
                     </div>
                     {{ thread.creation_time }}
-                    <!-- TODO: Add button to permit moderators to delete thread -->
                 </a>
             {% endfor %}
+            <script>
+                function deleteThread(id) {
+                    console.log("delete: ", id);
+                }
+            </script>
 		</div>
 
         <div class="d-flex justify-content-center mt-4">

@@ -117,8 +117,6 @@ class MediaDetailView(DetailView):
         # TODO: Write POST to accept user votes
         vote = float(request.POST.get("vote"))
 
-        print(vote)
-
         user = request.user
         media = Media.objects.get(pk=pk)
 
