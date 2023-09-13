@@ -24,8 +24,10 @@ class IndexView(TemplateView):
 class MediaView(TemplateView):
     template_name = "mediapop/media-index.html"
 
-    def get(self, request, *args, **kwargs):
+    def get_context_data(self, **kwargs):
         items_per_page = 10
+
+        request = self.request
 
         q_name = request.GET.get('name')
         q_media_type = request.GET.get('type')
@@ -84,7 +86,7 @@ class MediaView(TemplateView):
             "media": page
         }
 
-        return render(request=request, template_name=self.template_name, context=context)
+        return context
 
 
 class MediaDetailView(DetailView):
