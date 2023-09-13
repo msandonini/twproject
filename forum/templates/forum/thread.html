@@ -7,7 +7,6 @@
     <h3>{{ thread.media.name }}</h3>
     <h6 class="text-muted">@{{ thread.author.username }}</h6>
     <small class="text-muted">{{ thread.creation_time }}</small>
-    <!-- TODO: Add button to permit moderators to delete thread -->
     {% if user.is_authenticated %}
         <form id="_form-comment_" method="post">
             {% csrf_token %}
@@ -65,7 +64,6 @@
                 <small>{{ comment.timestamp }}</small><br>
                 {{ comment.content }}
             </div>
-            <!-- TODO: Add button to permit moderators to delete comment -->
         {% endfor %}
     </div>
 {% endblock %}

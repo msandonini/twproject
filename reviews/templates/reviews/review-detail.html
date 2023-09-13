@@ -25,8 +25,6 @@
                 Modifica recensione
             </button>
 
-            <!-- TODO: Add review deletion -->
-
             <div class="modal fade" id="createReviewModal" tabindex="-1" role="dialog" aria-labelledby="createReviewModalLabel" aria-hidden="true">
                 <div class="modal-dialog modal-lg" role="document">
                     <div class="modal-content">
@@ -181,7 +179,6 @@
                     <small>{{ comment.timestamp }}</small><br>
                     {{ comment.text }}
                 </div>
-                <!-- TODO: Add button to permit moderators to delete comment -->
             {% endfor %}
         </div>
     </div>
