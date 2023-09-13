@@ -145,6 +145,7 @@ class ReviewDetailView(TemplateView):
 
         return context
 
+    @method_decorator(login_required)
     def post(self, request, pk):
         review = get_object_or_404(Review, pk=pk)
 
